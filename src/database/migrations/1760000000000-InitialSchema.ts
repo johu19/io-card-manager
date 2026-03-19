@@ -47,6 +47,7 @@ export class InitialSchema1760000000000 implements MigrationInterface {
         "metadata" jsonb,
         "customer_id" integer NOT NULL,
         CONSTRAINT "PK_product_id" PRIMARY KEY ("id"),
+        CONSTRAINT "UQ_product_customer_id" UNIQUE ("customer_id"),
         CONSTRAINT "FK_product_customer_id" FOREIGN KEY ("customer_id") REFERENCES "customer"("id") ON DELETE CASCADE ON UPDATE NO ACTION
       )
     `);

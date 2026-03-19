@@ -31,8 +31,8 @@ export class IssuerController {
     return this.issuerService.issueCard(payload);
   }
 
-  @Get('customers/:documentNumber/products')
-  @ApiOperation({ summary: 'Get all products by customer document number' })
+  @Get('customers/:documentNumber/product')
+  @ApiOperation({ summary: 'Get customer product by document number' })
   @ApiParam({ name: 'documentNumber', example: '12345678' })
   @ApiOkResponse({ type: CustomerProductsResponseDto })
   @ApiNotFoundResponse({ description: 'Customer not found' })

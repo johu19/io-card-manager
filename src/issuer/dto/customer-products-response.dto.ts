@@ -53,6 +53,6 @@ export class CustomerProductsResponseDto {
   @ApiProperty({ example: 'jane@example.com' })
   email: string;
 
-  @ApiProperty({ type: [CustomerProductItemResponseDto] })
-  products: CustomerProductItemResponseDto[];
+  @ApiProperty({ type: CustomerProductItemResponseDto })
+  product: CustomerProductItemResponseDto;
 }
