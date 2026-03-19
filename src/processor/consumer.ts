@@ -7,6 +7,7 @@ import {
 import { KafkaService } from '../kafka/kafka.service';
 import { CardEvent } from '../kafka/interfaces/card-event.interface';
 import { ProcessorService } from './processor.service';
+import { sleep } from './processor.helper';
 
 @Injectable()
 export class Consumer implements OnModuleInit {
@@ -48,6 +49,10 @@ export class Consumer implements OnModuleInit {
         this.logger.warn(
           `Processing event ${event.id} failed on attempt ${attempt}/${this.maxRetries}`,
         );
+
+        if (attempt < this.maxRetries) {
+          await sleep(this.getRetryDelayMs(attempt));
+        }
       }
     }
 
@@ -63,5 +68,9 @@ export class Consumer implements OnModuleInit {
       topic: CARD_ISSUANCE_DLQ_TOPIC,
       value: JSON.stringify(dlqEvent satisfies CardEvent),
     });
+  }
+
+  private getRetryDelayMs(attempt: number): number {
+    return 1000 * 2 ** (attempt - 1);
   }
 }

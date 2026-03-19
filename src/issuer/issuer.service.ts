@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
@@ -31,7 +32,17 @@ export class IssuerService {
   ) {}
 
   async issueCard(payload: IssueCardDto): Promise<IssueCardResponse> {
-    const customerToUpsert = new CustomerEntity();
+    const foundCustomer = await this.customerRepository.findByDocumentNumber(
+      payload.customer.documentNumber,
+    );
+
+    if (foundCustomer?.product) {
+      throw new BadRequestException(
+        `Customer with document number ${payload.customer.documentNumber} already has a product`,
+      );
+    }
+
+    const customerToUpsert = foundCustomer || new CustomerEntity();
     customerToUpsert.fullName = payload.customer.fullName;
     customerToUpsert.documentNumber = payload.customer.documentNumber;
     customerToUpsert.age = payload.customer.age;
@@ -44,7 +55,6 @@ export class IssuerService {
     const productToCreate = new ProductEntity();
     productToCreate.network = payload.product.network;
     productToCreate.currency = payload.product.currency;
-    productToCreate.customer = customer;
     productToCreate.type = ProductType.CARD;
     productToCreate.customer = customer;
     productToCreate.status = ProductStatus.REQUESTED;
@@ -94,13 +104,13 @@ export class IssuerService {
       fullName: customer.fullName,
       age: customer.age,
       email: customer.email,
-      products: customer.products.map((product) => ({
-        network: product.network,
-        currency: product.currency,
-        type: product.type,
-        status: product.status,
-        metadata: product.metadata as Record<string, unknown> | null,
-      })),
+      product: {
+        network: customer.product.network,
+        currency: customer.product.currency,
+        type: customer.product.type,
+        status: customer.product.status,
+        metadata: customer.product.metadata as Record<string, unknown> | null,
+      },
     };
   }
 }

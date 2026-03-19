@@ -128,9 +128,9 @@ Creates a card issuance request.
 - persists customer and product data
 - publishes a Kafka message to `io.card.requested.v1`
 
-### `GET /customers/:documentNumber/products`
+### `GET /customers/:documentNumber/product`
 
-Returns a customer and all products associated with that document number.
+Returns a customer and the product associated with that document number.
 
 - requires Basic Auth
 
@@ -144,19 +144,17 @@ Example response shape:
   "fullName": "Jane Doe",
   "age": 30,
   "email": "jane@example.com",
-  "products": [
-    {
-      "network": "VISA",
-      "currency": "PEN",
-      "type": "CARD",
-      "status": "ISSUED",
-      "metadata": {
-        "card_number": "4111111111111111",
-        "card_expiration_date": "12/30",
-        "card_cvc": "123"
-      }
+  "product": {
+    "network": "VISA",
+    "currency": "PEN",
+    "type": "CARD",
+    "status": "ISSUED",
+    "metadata": {
+      "card_number": "4111111111111111",
+      "card_expiration_date": "12/30",
+      "card_cvc": "123"
     }
-  ]
+  }
 }
 ```
 

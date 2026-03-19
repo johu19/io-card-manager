@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ProductEntity } from './product.entity';
 
 export enum CustomerDocumentType {
@@ -30,6 +30,6 @@ export class CustomerEntity {
   @Column({ type: 'varchar' })
   email: string;
 
-  @OneToMany(() => ProductEntity, (product) => product.customer)
-  products: ProductEntity[];
+  @OneToOne(() => ProductEntity, (product) => product.customer)
+  product: ProductEntity;
 }

@@ -22,7 +22,7 @@ export class CustomerRepository {
         documentNumber: entity.documentNumber,
       },
       relations: {
-        products: true,
+        product: true,
       },
     });
 
@@ -36,7 +36,7 @@ export class CustomerRepository {
     return this.repository.findOne({
       where: [{ email }, { documentNumber }],
       relations: {
-        products: true,
+        product: true,
       },
     });
   }
@@ -45,7 +45,7 @@ export class CustomerRepository {
     return this.repository.findOne({
       where: { documentNumber },
       relations: {
-        products: true,
+        product: true,
       },
     });
   }

@@ -2,7 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CustomerEntity } from './customer.entity';
@@ -64,7 +64,7 @@ export class ProductEntity {
   @Column({ name: 'customer_id', type: 'integer' })
   customerId: number;
 
-  @ManyToOne(() => CustomerEntity, (customer) => customer.products, {
+  @OneToOne(() => CustomerEntity, (customer) => customer.product, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'customer_id' })

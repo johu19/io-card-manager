@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { CustomerDocumentType } from '../database/entities/customer.entity';
 import {
   ProductCurrency,
@@ -51,6 +55,7 @@ describe('IssuerService', () => {
       forceError: false,
     };
 
+    customerRepository.findByDocumentNumber.mockResolvedValue(null);
     customerRepository.upsertByDocumentNumber.mockResolvedValue({ id: 7 });
     productRepository.create.mockResolvedValue({ id: 42 });
     kafkaService.sendMessage.mockResolvedValue(true);
@@ -77,6 +82,38 @@ describe('IssuerService', () => {
     });
   });
 
+  it('rejects issuing a card when the customer already has a product', async () => {
+    const payload = {
+      customer: {
+        documentType: CustomerDocumentType.DNI,
+        documentNumber: '12345678',
+        email: 'jane@example.com',
+        fullName: 'Jane Doe',
+        age: 30,
+      },
+      product: {
+        network: ProductNetwork.VISA,
+        currency: ProductCurrency.USD,
+      },
+      forceError: false,
+    };
+
+    customerRepository.findByDocumentNumber.mockResolvedValue({
+      id: 7,
+      product: {
+        id: 41,
+        currency: ProductCurrency.PEN,
+        network: ProductNetwork.VISA,
+      },
+    });
+
+    await expect(service.issueCard(payload)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(customerRepository.upsertByDocumentNumber).not.toHaveBeenCalled();
+    expect(productRepository.create).not.toHaveBeenCalled();
+  });
+
   it('throws service unavailable when publishing fails', async () => {
     const payload = {
       customer: {
@@ -93,6 +130,7 @@ describe('IssuerService', () => {
       forceError: false,
     };
 
+    customerRepository.findByDocumentNumber.mockResolvedValue(null);
     customerRepository.upsertByDocumentNumber.mockResolvedValue({ id: 7 });
     productRepository.create.mockResolvedValue({ id: 42 });
     kafkaService.sendMessage.mockRejectedValue(new Error('kafka down'));
@@ -102,7 +140,7 @@ describe('IssuerService', () => {
     );
   });
 
-  it('returns customer products by document number', async () => {
+  it('returns customer product by document number', async () => {
     customerRepository.findByDocumentNumber.mockResolvedValue({
       id: 1,
       documentType: CustomerDocumentType.DNI,
@@ -110,15 +148,13 @@ describe('IssuerService', () => {
       fullName: 'Jane Doe',
       age: 30,
       email: 'jane@example.com',
-      products: [
-        {
-          network: ProductNetwork.VISA,
-          currency: ProductCurrency.USD,
-          type: ProductType.CARD,
-          status: ProductStatus.ISSUED,
-          metadata: { card_number: '4111111111111111' },
-        },
-      ],
+      product: {
+        network: ProductNetwork.VISA,
+        currency: ProductCurrency.USD,
+        type: ProductType.CARD,
+        status: ProductStatus.ISSUED,
+        metadata: { card_number: '4111111111111111' },
+      },
     });
 
     await expect(
@@ -130,15 +166,13 @@ describe('IssuerService', () => {
       fullName: 'Jane Doe',
       age: 30,
       email: 'jane@example.com',
-      products: [
-        {
-          network: ProductNetwork.VISA,
-          currency: ProductCurrency.USD,
-          type: ProductType.CARD,
-          status: ProductStatus.ISSUED,
-          metadata: { card_number: '4111111111111111' },
-        },
-      ],
+      product: {
+        network: ProductNetwork.VISA,
+        currency: ProductCurrency.USD,
+        type: ProductType.CARD,
+        status: ProductStatus.ISSUED,
+        metadata: { card_number: '4111111111111111' },
+      },
     });
   });
 
